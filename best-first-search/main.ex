@@ -1,4 +1,3 @@
-
 defmodule PriorityQueue do
   def enqueue([], {val,pri}), do: [{val,pri}]
   def enqueue(queue, {val,pri}) do   
@@ -116,7 +115,6 @@ defmodule BFS do
       true ->
         search %State{state|node: node, frontier: new_frontier}   
     end
-   
   end
 
   defp expand(graph, node, frontier \\ []) do
@@ -156,9 +154,11 @@ defmodule Main do
       Edge.new(:Hirsova, :Eforie, 86),
     ]
 
-    graph = Enum.reduce(edges, Graph.new, & Graph.add_edge(&2, &1))
+    graph =
+      Enum.reduce(edges, Graph.new, & Graph.add_edge(&2, &1))
+      |> IO.inspect
 
-    case BFS.search(graph, :Sibiu, :Bucharest) do
+    case BFS.search(graph, :Arad, :Bucharest) do
       {:success, node} ->
         IO.puts node.total_cost
         BFS.Node.print(node) |> IO.puts
