@@ -1,3 +1,5 @@
+Code.require_file("graph.ex")
+
 defmodule PriorityQueue do
   def enqueue([], {val,pri}), do: [{val,pri}]
   def enqueue(queue, {val,pri}) do   
@@ -10,54 +12,6 @@ defmodule PriorityQueue do
 
   def dequeue([]), do: {nil,[]}
   def dequeue([head|tail]), do: {head,tail}
-end
-
-defmodule Edge do
-  defstruct [
-    vertex_v: :empty,
-    vertex_u: :empty,
-    weight: 0,
-  ]
-
-  def new(vertex_v, vertex_u, weight) do
-    %__MODULE__{
-      vertex_v: vertex_v,
-      vertex_u: vertex_u,
-      weight: weight
-    }
-  end
-end
-
-defmodule Graph do
-  defstruct [
-    adjacency_list: Map.new,
-    type: :undirected,
-  ]
-
-  def new() do
-    %__MODULE__{}
-  end
-
-  def add_edge(graph, %Edge{vertex_u: vertex_u, vertex_v: vertex_v, weight: weight}) do
-    adjacency_u =
-      Map.get(graph.adjacency_list, vertex_u, [])
-      |> Keyword.put(vertex_v, weight)
-
-    adjacency_v =
-      Map.get(graph.adjacency_list, vertex_v, Keyword.new)
-      |> Keyword.put(vertex_u, weight)
-    
-    new_adjacency_list =
-      graph.adjacency_list
-      |> Map.put(vertex_v, adjacency_v)
-      |> Map.put(vertex_u, adjacency_u)
-
-    %{graph | adjacency_list: new_adjacency_list}
-  end
-
-  def get_adjacency(graph, vertex) do
-    Map.get(graph.adjacency_list, vertex, Keyword.new)
-  end
 end
 
 defmodule BFS.State do
@@ -129,29 +83,29 @@ end
 defmodule Main do
   def run do
     edges = [
-      Edge.new(:Arad, :Zerind, 75),
-      Edge.new(:Arad, :Timisoara, 118),
-      Edge.new(:Arad, :Sibiu, 140),
-      Edge.new(:Zerind, :Oradea, 71),
-      Edge.new(:Oradea, :Sibiu, 151),
-      Edge.new(:Timisoara, :Lugoj, 111),
-      Edge.new(:Lugoj, :Mehadia, 70),
-      Edge.new(:Mehadia, :Drobeta, 75),
-      Edge.new(:Drobeta, :Craiova, 120),
-      Edge.new(:Craiova, :Rimnicu_Vilcea, 146),
-      Edge.new(:Craiova, :Pitesti, 138),
-      Edge.new(:Sibiu, :Fagaras, 99),
-      Edge.new(:Sibiu, :Rimnicu_Vilcea, 80),
-      Edge.new(:Rimnicu_Vilcea, :Pitesti, 97),
-      Edge.new(:Fagaras, :Bucharest, 211),
-      Edge.new(:Pitesti, :Bucharest, 101),
-      Edge.new(:Bucharest, :Urziceni, 85),
-      Edge.new(:Bucharest, :Giurgiu, 90),
-      Edge.new(:Urziceni, :Vaslui, 142),
-      Edge.new(:Vaslui, :Iasi, 92),
-      Edge.new(:Iasi, :Neamt, 87),
-      Edge.new(:Urziceni, :Hirsova, 98),
-      Edge.new(:Hirsova, :Eforie, 86),
+      Graph.Edge.new(:Arad, :Zerind, 75),
+      Graph.Edge.new(:Arad, :Timisoara, 118),
+      Graph.Edge.new(:Arad, :Sibiu, 140),
+      Graph.Edge.new(:Zerind, :Oradea, 71),
+      Graph.Edge.new(:Oradea, :Sibiu, 151),
+      Graph.Edge.new(:Timisoara, :Lugoj, 111),
+      Graph.Edge.new(:Lugoj, :Mehadia, 70),
+      Graph.Edge.new(:Mehadia, :Drobeta, 75),
+      Graph.Edge.new(:Drobeta, :Craiova, 120),
+      Graph.Edge.new(:Craiova, :Rimnicu_Vilcea, 146),
+      Graph.Edge.new(:Craiova, :Pitesti, 138),
+      Graph.Edge.new(:Sibiu, :Fagaras, 99),
+      Graph.Edge.new(:Sibiu, :Rimnicu_Vilcea, 80),
+      Graph.Edge.new(:Rimnicu_Vilcea, :Pitesti, 97),
+      Graph.Edge.new(:Fagaras, :Bucharest, 211),
+      Graph.Edge.new(:Pitesti, :Bucharest, 101),
+      Graph.Edge.new(:Bucharest, :Urziceni, 85),
+      Graph.Edge.new(:Bucharest, :Giurgiu, 90),
+      Graph.Edge.new(:Urziceni, :Vaslui, 142),
+      Graph.Edge.new(:Vaslui, :Iasi, 92),
+      Graph.Edge.new(:Iasi, :Neamt, 87),
+      Graph.Edge.new(:Urziceni, :Hirsova, 98),
+      Graph.Edge.new(:Hirsova, :Eforie, 86),
     ]
 
     graph =
