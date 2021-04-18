@@ -1,24 +1,7 @@
 Code.require_file("common/graph.ex")
 Code.require_file("common/fifo_queue.ex")
+Code.require_file("common/search_node.ex")
 Code.require_file("common/romania.ex")
-
-defmodule BFS.Node do
-  defstruct label: :empty,
-            parent: nil,
-            total_cost: 0
-
-  def new({label, cost}, parent) do
-    %__MODULE__{
-      label: label,
-      total_cost: parent.total_cost + cost,
-      parent: parent
-    }
-  end
-
-  def print(node, str \\ "")
-  def print(node, str) when is_nil(node.parent), do: to_string(node.label) <> str
-  def print(node, str), do: print(node.parent, " => " <> to_string(node.label) <> str)
-end
 
 defmodule BFS.State do
   defstruct graph: Graph.new(),
@@ -30,10 +13,9 @@ end
 
 defmodule BFS do
   alias BFS.State
-  alias BFS.Node
 
   def search(graph, current, goal) do
-    node = %Node{label: current}
+    node = %SearchNode{label: current}
     frontier = expand(graph, node)
 
     %State{graph: graph, node: node, goal: goal, frontier: frontier}
@@ -71,7 +53,7 @@ defmodule BFS do
 
   defp expand(graph, node) do
     Graph.get_adjacency(graph, node.label)
-    |> Enum.map(&Node.new(&1, node))
+    |> Enum.map(&SearchNode.new(&1, node))
   end
 end
 
@@ -82,7 +64,7 @@ defmodule Main do
     case BFS.search(graph, :Arad, :Bucharest) do
       {:success, node} ->
         IO.puts(node.total_cost)
-        BFS.Node.print(node) |> IO.puts()
+        SearchNode.print(node) |> IO.puts()
 
       {:failure} ->
         IO.puts("Failed")

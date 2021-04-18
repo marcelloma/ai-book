@@ -1,7 +1,7 @@
 Code.require_file("common/graph.ex")
 Code.require_file("common/priority_queue.ex")
-Code.require_file("common/romania.ex")
 Code.require_file("common/search_node.ex")
+Code.require_file("common/romania.ex")
 
 defmodule UCS.State do
   defstruct graph: Graph.new(),
