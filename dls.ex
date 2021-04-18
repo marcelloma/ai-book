@@ -1,23 +1,6 @@
 Code.require_file("common/graph.ex")
+Code.require_file("common/search_node.ex")
 Code.require_file("common/romania.ex")
-
-defmodule DLS.Node do
-  defstruct label: :empty,
-            parent: nil,
-            total_cost: 0
-
-  def new({label, cost}, parent) do
-    %__MODULE__{
-      label: label,
-      total_cost: parent.total_cost + cost,
-      parent: parent
-    }
-  end
-
-  def print(node, str \\ "")
-  def print(node, str) when is_nil(node.parent), do: to_string(node.label) <> str
-  def print(node, str), do: print(node.parent, " => " <> to_string(node.label) <> str)
-end
 
 defmodule DLS.State do
   defstruct graph: Graph.new(),
@@ -31,7 +14,7 @@ defmodule DLS.State do
       graph: graph,
       goal: goal,
       initial: current,
-      node: %DLS.Node{label: current},
+      node: %SearchNode{label: current},
       limit: limit
     }
   end
@@ -39,21 +22,21 @@ end
 
 defmodule DLS do
   alias DLS.State
-  alias DLS.Node
 
   def search(state, depth \\ 0)
 
-  def search(state, depth) when depth >= state.limit do
-    IO.inspect(%{depth: depth, path: Node.print(state.node)})
+  def search(state, depth) when state.node.label == state.goal do
+    IO.inspect(%{depth: depth, path: SearchNode.print(state.node)})
+
+    {:success, state}
+  end
+
+    def search(state, depth) when depth >= state.limit do
+    IO.inspect(%{depth: depth, path: SearchNode.print(state.node)})
 
     {:failure, %State{state | node: state.node.parent}}
   end
 
-  def search(state, depth) when state.node.label == state.goal do
-    IO.inspect(%{depth: depth, path: Node.print(state.node)})
-
-    {:success, state}
-  end
 
   def search(state, depth) do
     %{node: node} = state
@@ -65,7 +48,7 @@ defmodule DLS do
 
     state = %State{state | graph: new_graph}
 
-    IO.inspect(%{depth: depth, path: DLS.Node.print(node)})
+    IO.inspect(%{depth: depth, path: SearchNode.print(node)})
 
     Enum.reduce_while(children, {:empty, state}, fn child, acc ->
       {_, state_acc} = acc
@@ -85,7 +68,7 @@ defmodule DLS do
 
   defp expand(graph, node) do
     Graph.get_adjacency(graph, node.label)
-    |> Enum.map(&Node.new(&1, node))
+    |> Enum.map(&SearchNode.new(&1, node))
   end
 end
 
@@ -118,7 +101,7 @@ defmodule Main do
     case IDS.search(state, 4) do
       {:success, state} ->
         IO.puts("")
-        IO.inspect(%{totalCost: state.node.total_cost, solution: DLS.Node.print(state.node)})
+        IO.inspect(%{totalCost: state.node.total_cost, solution: SearchNode.print(state.node)})
 
       {:failure, _} ->
         IO.puts("")

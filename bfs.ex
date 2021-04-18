@@ -2,14 +2,6 @@ Code.require_file("common/graph.ex")
 Code.require_file("common/fifo_queue.ex")
 Code.require_file("common/romania.ex")
 
-defmodule BFS.State do
-  defstruct graph: Graph.new(),
-            goal: :empty,
-            reached: Map.new(),
-            frontier: Keyword.new(),
-            node: nil
-end
-
 defmodule BFS.Node do
   defstruct label: :empty,
             parent: nil,
@@ -26,6 +18,14 @@ defmodule BFS.Node do
   def print(node, str \\ "")
   def print(node, str) when is_nil(node.parent), do: to_string(node.label) <> str
   def print(node, str), do: print(node.parent, " => " <> to_string(node.label) <> str)
+end
+
+defmodule BFS.State do
+  defstruct graph: Graph.new(),
+            goal: :empty,
+            reached: Map.new(),
+            frontier: Keyword.new(),
+            node: nil
 end
 
 defmodule BFS do

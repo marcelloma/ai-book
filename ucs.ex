@@ -1,73 +1,72 @@
 Code.require_file("common/graph.ex")
 Code.require_file("common/priority_queue.ex")
 Code.require_file("common/romania.ex")
+Code.require_file("common/search_node.ex")
 
-defmodule BFS.State do
+defmodule UCS.State do
   defstruct graph: Graph.new(),
             goal: :empty,
-            reached: Map.new(),
-            frontier: Keyword.new(),
+            reached: %{},
+            frontier: [],
             node: nil
+
+  def new(graph, current, goal) do
+    node = %SearchNode{label: current}
+    reached = Map.put(%{}, current, node)
+    %__MODULE__{graph: graph, node: node, reached: reached, goal: goal}
+  end
 end
 
-defmodule BFS.Node do
-  defstruct label: :empty,
-            parent: nil,
-            total_cost: 0
-
-  def new({label, cost}, parent) do
-    %__MODULE__{
-      label: label,
-      total_cost: parent.total_cost + cost,
-      parent: parent
-    }
-  end
-
-  def print(node, str \\ "")
-  def print(node, str) when is_nil(node.parent), do: to_string(node.label) <> str
-  def print(node, str), do: print(node.parent, " => " <> to_string(node.label) <> str)
-end
-
-defmodule BFS do
-  alias BFS.State
-  alias BFS.Node
-
-  def search(graph, current, goal) do
-    node = %Node{label: current}
-    frontier = expand(graph, node)
-
-    %State{graph: graph, node: node, goal: goal, frontier: frontier}
-    |> search
-  end
-
-  def search(state) when state.node.label == state.goal, do: {:success, state.node}
+defmodule UCS do
   def search(state) when length(state.frontier) == 0, do: {:failure}
 
   def search(state) do
-    {{node, _}, new_frontier} = PriorityQueue.dequeue(state.frontier)
+    state = pop state
 
-    reached = Map.get(state.reached, node.label)
+    IO.inspect(%{path: SearchNode.print(state.node)})
 
     cond do
-      is_nil(reached) or node.total_cost < reached.total_cost ->
-        reached = Map.put(state.reached, node.label, node)
-
-        search(%State{
-          state
-          | node: node,
-            reached: reached,
-            frontier: expand(state.graph, node, new_frontier)
-        })
-
+      state.node.label == state.goal ->
+        {:success, state}
       true ->
-        search(%State{state | node: node, frontier: new_frontier})
+        state
+        |> expand
+        |> search
     end
   end
 
-  defp expand(graph, node, frontier \\ []) do
-    Graph.get_adjacency(graph, node.label)
-    |> Enum.map(&(Node.new(&1, node) |> node_priority))
-    |> Enum.reduce(frontier, &PriorityQueue.enqueue(&2, &1))
+  def expand(state) do
+    frontier =
+      Graph.get_adjacency(state.graph, state.node.label)
+      |> Enum.map(&(SearchNode.new(&1, state.node) |> node_priority))
+      |> Enum.filter(&is_reached(state, &1))
+      |> Enum.reduce(state.frontier, &PriorityQueue.enqueue(&2, &1))
+
+    state
+    |> Map.put(:frontier, frontier)
+  end
+
+  defp pop(state) do
+    {{node, _}, frontier} = PriorityQueue.dequeue(state.frontier)
+
+    state
+    |> Map.put(:node, node)
+    |> Map.put(:frontier, frontier)
+    |> reach_node
+  end
+
+  defp reach_node(state) do
+    reached =
+      state.reached
+      |> Map.put(state.node.label, state.node)
+
+    state
+    |> Map.put(:reached, reached)
+  end
+
+  defp is_reached(state, {node, _}) do
+    reached = Map.get(state.reached, node.label)
+    is_nil(reached) or node.total_cost < reached.total_cost
   end
 
   defp node_priority(node), do: {node, node.total_cost}
@@ -77,13 +76,19 @@ defmodule Main do
   def run do
     graph = Romania.graph()
 
-    case BFS.search(graph, :Arad, :Bucharest) do
-      {:success, node} ->
-        IO.puts(node.total_cost)
-        BFS.Node.print(node) |> IO.puts()
+    result =
+      UCS.State.new(graph, :Arad, :Bucharest)
+      |> UCS.expand()
+      |> UCS.search()
 
-      {:failure} ->
-        IO.puts("Failed")
+    case result do
+      {:success, state} ->
+        IO.puts("")
+        IO.inspect(%{totalCost: state.node.total_cost, solution: SearchNode.print(state.node)})
+
+      {:failure, _} ->
+        IO.puts("")
+        IO.puts("Failure")
     end
   end
 end
